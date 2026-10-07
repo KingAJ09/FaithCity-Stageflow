@@ -1,0 +1,124 @@
+.timerRow.hasDelete {
+  grid-template-columns: 18px 28px 4px minmax(0, 1fr) auto 32px 28px 28px;
+}
+
+.deleteTimer {
+  color: #ef7b7b;
+}
+
+.timeUp {
+  color: #ff6b6b;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.brand {
+  padding: 0 4px;
+}
+
+.brandLogo {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.roomPickerControls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.roomPickerControls select,
+.editGrid select {
+  min-width: 0;
+  flex: 1;
+  padding: 10px;
+  color: #e7edf5;
+  background: #141b26;
+  border: 1px solid #273142;
+  border-radius: 7px;
+}
+
+.roomPickerControls select {
+  font-size: 12px;
+}
+
+.roomPickerControls .iconBtn {
+  padding: 8px;
+}
+
+.editGrid .settingToggle {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.editGrid .settingToggle input {
+  flex: 0 0 auto;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+}
+
+.emptyState {
+  padding: 22px;
+  color: #77869a;
+  font-size: 12px;
+}
+
+.emptyStatePage {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 32px;
+  color: #e7edf5;
+  background: #090d14;
+  text-align: center;
+}
+
+.emptyStatePage h1,
+.emptyStatePage p {
+  margin: 0;
+}
+
+.emptyStatePage p {
+  max-width: 520px;
+  color: #8b98aa;
+}
+
+.setupLogo {
+  width: min(280px, 70vw);
+  margin-bottom: 12px;
+}
+
+.emptyStatePage .errorBanner {
+  max-width: 560px;
+}
+
+.errorBanner {
+  margin: 10px 18px;
+  padding: 12px 14px;
+  color: #ffd0d0;
+  background: #351b22;
+  border: 1px solid #713440;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.dot.offline {
+  background: #ef7b7b;
+}
+
+.time-warning {
+  color: #fbbf24;
+}
+
+.time-critical {
+  color: #ff6b6b;
+}
