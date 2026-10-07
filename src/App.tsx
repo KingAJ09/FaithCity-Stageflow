@@ -299,7 +299,7 @@ function Controller() {
   if (!room) {
     return (
       <main className="emptyStatePage">
-        <img className="setupLogo" src="/faithcity-logo.png" alt="Faith City Lagos Province 5 HQ" />
+        <img className="setupLogo" src="./faithcity-logo.png" alt="Faith City Lagos Province 5 HQ" />
         <h1>{initialLoadFailed ? "Workspace unavailable" : "Create your first room"}</h1>
         <p>{initialLoadFailed ? "The local workspace could not be loaded. Resolve the error and retry." : "No event rooms are configured yet. Create a room to start building its timer rundown."}</p>
         {error && <p className="errorBanner" role="alert">{error}</p>}
@@ -877,7 +877,7 @@ function Controller() {
         <div className="brand">
           <img
             className="brandLogo"
-            src="/faithcity-logo.png"
+            src="./faithcity-logo.png"
             alt="Faith City Lagos Province 5 HQ"
           />
         </div>

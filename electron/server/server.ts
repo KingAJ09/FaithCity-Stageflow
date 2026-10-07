@@ -11,7 +11,7 @@ export async function startServer(preferred=3000){const appx=express();appx.use(
   appx.get('/api/rooms',(_,res)=>res.json(db.listRooms()));
   appx.get('/api/rooms/:id/snapshot',(req,res)=>{try{res.json(snapshot(req.params.id))}catch(e){res.status(404).json({error:'Room not found'})}});
   const dist=path.join(app.getAppPath(),'dist'); appx.use(express.static(dist));
-  appx.get('/viewer/:roomId',(_,res)=>res.sendFile(path.join(dist,'index.html'))); appx.get('/agenda/:roomId',(_,res)=>res.sendFile(path.join(dist,'index.html'))); appx.get('/moderator/:roomId',(_,res)=>res.sendFile(path.join(dist,'index.html')));
+  appx.get('/viewer/:roomId',(req,res)=>res.redirect(302,`/?mode=viewer&room=${encodeURIComponent(req.params.roomId)}&port=${port}`)); appx.get('/agenda/:roomId',(req,res)=>res.redirect(302,`/?mode=agenda&room=${encodeURIComponent(req.params.roomId)}&port=${port}`)); appx.get('/moderator/:roomId',(req,res)=>res.redirect(302,`/?mode=moderator&room=${encodeURIComponent(req.params.roomId)}&port=${port}`));
   httpServer=http.createServer(appx); io=new Server(httpServer,{cors:{origin:'*'}});
   io.on('connection',(socket)=>{const roomId=String(socket.handshake.query.roomId||''); const role=String(socket.handshake.query.role||'viewer'); const name=String(socket.handshake.query.name||`${role}-${socket.id.slice(0,5)}`); const ip=socket.handshake.address; if(roomId){socket.join(roomId);sockets.set(socket.id,{name,role,ip,roomId,connectedAt:Date.now()});socket.emit('state',snapshot(roomId));io.to(roomId).emit('connections',roomConnections(roomId));}
     socket.on('action',(a)=>{if(!roomId)return; handleAction(roomId,a);}); socket.on('disconnect',()=>{sockets.delete(socket.id);if(roomId)io.to(roomId).emit('connections',roomConnections(roomId)) });

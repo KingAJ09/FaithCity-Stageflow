@@ -43,7 +43,7 @@ Build the platform you are running on:
 npm run package:win
 npm run package:mac
 ```
-On Windows, `npm run package:win` creates an NSIS installer (`FaithCity-Stageflow-Setup-<version>-x64.exe`) and a portable executable (`FaithCity-Stageflow-Portable-<version>-x64.exe`) in `release/`. Give users the Setup file to install the app; it supports choosing an install directory and creates Start Menu and desktop shortcuts.
+On Windows, `npm run package:win` creates an NSIS installer (`FaithCity-Stageflow-Setup-<version>-x64.exe`) and a portable executable (`FaithCity-Stageflow-Portable-<version>-x64.exe`) in `release/build/`. Give users the Setup file to install the app; it supports choosing an install directory and creates Start Menu and desktop shortcuts.
 Cross-platform native packaging should be performed on the corresponding OS/CI runner when signing/notarization is required.
 
 ## LAN use
