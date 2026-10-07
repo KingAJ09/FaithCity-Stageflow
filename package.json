@@ -2,7 +2,7 @@
   "name": "stageflow",
   "version": "0.1.0",
   "description": "Offline-first event timing and production control desktop application",
-  "main": "dist-electron/main/main.js",
+  "main": "dist-electron/electron/main/main.js",
   "author": "FaithCity Stageflow",
   "license": "MIT",
   "type": "module",
@@ -20,7 +20,6 @@
   "dependencies": {
     "@vitejs/plugin-react": "latest",
     "better-sqlite3": "latest",
-    "electron": "latest",
     "express": "latest",
     "lucide-react": "latest",
     "qrcode": "latest",
@@ -39,6 +38,7 @@
     "@types/react-dom": "latest",
     "concurrently": "latest",
     "cross-env": "latest",
+    "electron": "^44.6.0",
     "electron-builder": "latest",
     "tsx": "latest",
     "typescript": "latest",
@@ -51,12 +51,62 @@
     "productName": "FaithCity Stageflow",
     "icon": "public/faithcity-icon.png",
     "asar": true,
-    "files": ["dist/**", "dist-electron/**", "database/**", "package.json"],
-    "extraMetadata": { "main": "dist-electron/main/main.js" },
-    "directories": { "output": "release" },
-    "win": { "icon": "build/faithcity-icon.ico", "target": [{ "target": "nsis", "arch": ["x64", "arm64"] }, { "target": "portable", "arch": ["x64", "arm64"] }], "artifactName": "FaithCity-Stageflow-Setup-${version}-${arch}.${ext}" },
-    "nsis": { "oneClick": false, "allowToChangeInstallationDirectory": true, "createDesktopShortcut": "ask", "createStartMenuShortcut": true },
-    "mac": { "target": [{ "target": "dmg", "arch": ["x64", "arm64"] }], "category": "public.app-category.business", "artifactName": "FaithCity-Stageflow-${version}-${arch}.${ext}" },
-    "dmg": { "title": "FaithCity Stageflow" }
+    "files": [
+      "dist/**",
+      "dist-electron/**",
+      "database/**",
+      "package.json"
+    ],
+    "extraMetadata": {
+      "main": "dist-electron/electron/main/main.js"
+    },
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "icon": "build/faithcity-icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "artifactName": "FaithCity-Stageflow-Setup-${version}-${arch}.${ext}"
+    },
+    "portable": {
+      "artifactName": "FaithCity-Stageflow-Portable-${version}-${arch}.${ext}"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "category": "public.app-category.business",
+      "artifactName": "FaithCity-Stageflow-${version}-${arch}.${ext}"
+    },
+    "dmg": {
+      "title": "FaithCity Stageflow"
+    }
   }
 }
