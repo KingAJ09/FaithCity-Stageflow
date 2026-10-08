@@ -49,6 +49,66 @@
   padding: 8px;
 }
 
+.dialogBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(0 0 0 / 65%);
+}
+
+.roomDialog {
+  width: min(100%, 420px);
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+  color: #e7edf5;
+  background: #111824;
+  border: 1px solid #273142;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgb(0 0 0 / 40%);
+}
+
+.roomDialog h2 {
+  margin: 0 0 7px;
+  font-size: 16px;
+}
+
+.roomDialog p {
+  margin: 0;
+  color: #8b98aa;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.roomDialog label {
+  display: grid;
+  gap: 7px;
+  color: #8fa0b5;
+  font-size: 11px;
+}
+
+.roomDialog input {
+  width: 100%;
+  padding: 10px;
+  color: #e7edf5;
+  background: #0c121b;
+  border: 1px solid #293547;
+  border-radius: 7px;
+  outline: none;
+}
+
+.roomDialog input:focus {
+  border-color: #2563eb;
+}
+
+.roomDialog button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .editGrid .settingToggle {
   flex-direction: row;
   align-items: center;

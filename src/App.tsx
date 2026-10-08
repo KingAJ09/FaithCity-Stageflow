@@ -55,6 +55,10 @@ function Controller() {
   const [error, setError] = useState("");
   const [ready, setReady] = useState(false);
   const [initialLoadFailed, setInitialLoadFailed] = useState(false);
+  const [roomCreateOpen, setRoomCreateOpen] = useState(false);
+  const [roomName, setRoomName] = useState("");
+  const [roomCreateError, setRoomCreateError] = useState("");
+  const [creatingRoom, setCreatingRoom] = useState(false);
   const [message, setMessage] = useState("");
   const [editTimerId, setEditTimerId] = useState<string | null>(null);
   const [editDraft, setEditDraft] = useState<Partial<Timer>>({});
@@ -111,12 +115,15 @@ function Controller() {
     const s = connectSocket(room.id, "controller", "FaithCity Stageflow Controller", server.port);
     socketRef.current = s;
     s.on("state", (state: any) => {
+      if (!mounted) return;
       setRoom(state.room);
       setTimers(state.timers);
       setMessages(state.messages);
       setError("");
     });
-    s.on("connections", setDevices);
+    s.on("connections", (connectedDevices) => {
+      if (mounted) setDevices(connectedDevices);
+    });
     s.on("connect_error", (reason) => setError(`Connection lost: ${reason.message}`));
     s.on("connect", () => setError(""));
     return () => {
@@ -130,6 +137,9 @@ function Controller() {
   }, [room]);
 
   const selected = timers.find((t) => t.id === selectedTimerId) || timers[0];
+  const viewerUrl = server && room
+    ? `${server.url.replace(/\/$/, "")}/viewer/${encodeURIComponent(room.id)}`
+    : "";
   const act = (type: string, timerId?: string, extra: any = {}) => {
     if (!socketRef.current?.connected) {
       setError("The local server is not connected. Reconnect before sending controls.");
@@ -243,17 +253,57 @@ function Controller() {
     setEditDraft({});
   };
   const addRoom = async () => {
-    if (!api) return;
-    const name = window.prompt("Enter a name for the new room")?.trim();
-    if (!name) return;
+    const name = roomName.trim();
+    if (!name) {
+      setRoomCreateError("Enter a name for the new room.");
+      return;
+    }
+    if (!api) {
+      setRoomCreateError("Room creation is only available in the desktop app.");
+      return;
+    }
+    setCreatingRoom(true);
+    setRoomCreateError("");
     try {
       const created = await api.rooms.create(name);
       setRooms((current) => [created, ...current]);
-      setRoom(created);
-      select(null);
+      if (!room) {
+        setRoom(created);
+        select(null);
+      }
+      setRoomName("");
+      setRoomCreateOpen(false);
       setError("");
     } catch (reason) {
-      setError(`Unable to create room: ${errorMessage(reason)}`);
+      setRoomCreateError(`Unable to create room: ${errorMessage(reason)}`);
+    } finally {
+      setCreatingRoom(false);
+    }
+  };
+  const openRoomCreation = () => {
+    setRoomName("");
+    setRoomCreateError("");
+    setRoomCreateOpen(true);
+  };
+  const deleteActiveRoom = async () => {
+    if (!room || !api) return;
+    if (!window.confirm(`Delete "${room.name}" and all of its timers and messages? This cannot be undone.`)) {
+      return;
+    }
+    try {
+      await api.rooms.delete(room.id);
+      const remainingRooms = rooms.filter((item) => item.id !== room.id);
+      setRooms(remainingRooms);
+      setRoom(remainingRooms[0] ?? null);
+      setTimers([]);
+      setMessages([]);
+      setDevices([]);
+      select(null);
+      setEditTimerId(null);
+      setEditDraft({});
+      setError("");
+    } catch (reason) {
+      setError(`Unable to delete room: ${errorMessage(reason)}`);
     }
   };
   const saveSettings = async () => {
@@ -285,6 +335,49 @@ function Controller() {
       setError(`Unable to open ${mode}: ${errorMessage(reason)}`);
     }
   };
+  const roomCreateDialog = roomCreateOpen && (
+    <div className="dialogBackdrop">
+      <form
+        className="roomDialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="create-room-title"
+        onSubmit={(event) => {
+          event.preventDefault();
+          void addRoom();
+        }}
+      >
+        <div>
+          <h2 id="create-room-title">Create room</h2>
+          <p>Give this event room a name. You can activate it from the room selector.</p>
+        </div>
+        <label>
+          <span>Room name</span>
+          <input
+            autoFocus
+            value={roomName}
+            onChange={(event) => setRoomName(event.target.value)}
+            placeholder="e.g. Sunday Service"
+            maxLength={100}
+          />
+        </label>
+        {roomCreateError && <div className="errorBanner" role="alert">{roomCreateError}</div>}
+        <div className="editActions">
+          <button
+            className="ghost"
+            type="button"
+            disabled={creatingRoom}
+            onClick={() => setRoomCreateOpen(false)}
+          >
+            Cancel
+          </button>
+          <button className="primary" type="submit" disabled={creatingRoom || !roomName.trim()}>
+            <Plus size={15} /> {creatingRoom ? "Creating…" : "Create room"}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
 
   if (!ready) return <div className="loading">Loading FaithCity Stageflow…</div>;
   if (!api) {
@@ -305,7 +398,8 @@ function Controller() {
         {error && <p className="errorBanner" role="alert">{error}</p>}
         {initialLoadFailed
           ? <button className="primary" onClick={() => window.location.reload()}>Retry</button>
-          : <button className="primary" onClick={addRoom}><Plus size={16} /> Create room</button>}
+          : <button className="primary" onClick={openRoomCreation}><Plus size={16} /> Create room</button>}
+        {roomCreateDialog}
       </main>
     );
   }
@@ -362,7 +456,7 @@ function Controller() {
             <div className="liveCard">
               <div className="liveMeta">
                 <span className={`pill ${selected?.status === "running" ? "live" : ""}`}>
-                  {selected?.status === "finished" ? "TIME UP" : selected?.status?.toUpperCase() || "IDLE"}
+                  {selected?.status === "finished" ? "TIME UP !!!" : selected?.status?.toUpperCase() || "IDLE"}
                 </span>
                 <span>{selected?.speaker || "No speaker assigned"}</span>
               </div>
@@ -641,7 +735,7 @@ function Controller() {
               <div className="bigTimer">{devices.length}</div>
               <div className="timerTitle">Connected clients</div>
               <div className="transport">
-                <button className="primary" onClick={() => navigator.clipboard?.writeText(server?.url || "")}>Copy server URL</button>
+                <button className="primary" onClick={() => navigator.clipboard?.writeText(viewerUrl)}>Copy viewer link</button>
               </div>
             </div>
           </div>
@@ -684,10 +778,6 @@ function Controller() {
                     <span>Critical window</span>
                     <input type="number" min="0" value={settingsDraft?.criticalSeconds ?? currentRoom.criticalSeconds} onChange={(event) => setSettingsDraft((current) => current ? { ...current, criticalSeconds: Math.max(0, Number(event.target.value)) } : current)} />
                   </label>
-                  <label className="settingToggle">
-                    <span>Automatically advance to the next timer</span>
-                    <input type="checkbox" checked={settingsDraft?.autoAdvance ?? currentRoom.autoAdvance} onChange={(event) => setSettingsDraft((current) => current ? { ...current, autoAdvance: event.target.checked } : current)} />
-                  </label>
                 </div>
                 <div className="editActions">
                   <button className="primary" onClick={saveSettings}>Save settings</button>
@@ -698,12 +788,12 @@ function Controller() {
           <div className="controlPanel">
             <div className="liveCard">
               <div className="liveMeta">
-                <span className="pill">AUTO ADVANCE</span>
-                <span>{currentRoom.autoAdvance ? "Enabled" : "Disabled"}</span>
+                <span className="pill">MANUAL ADVANCE</span>
+                <span>Enabled</span>
               </div>
-              <div className="bigTimer">{currentRoom.autoAdvance ? "ON" : "OFF"}</div>
-              <div className="timerTitle">Playback behavior</div>
-              <span className="emptyState">Change auto advance in Room preferences.</span>
+              <div className="bigTimer">MANUAL</div>
+              <div className="timerTitle">Timer completion behavior</div>
+              <span className="emptyState">A timer stays on TIME UP until you advance to the next timer.</span>
             </div>
           </div>
         </section>
@@ -717,7 +807,7 @@ function Controller() {
             <div>
               <h2>Rundown</h2>
               <span>
-                {timers.length} segments · Auto advance {currentRoom.autoAdvance ? "ON" : "OFF"}
+                {timers.length} segments · Manual advance
               </span>
             </div>
           </div>
@@ -893,8 +983,10 @@ function Controller() {
             }}>
               {rooms.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
             </select>
-            <button className="iconBtn" aria-label="Create room" title="Create room" onClick={addRoom}><Plus size={15} /></button>
+            <button className="iconBtn" aria-label="Create room" title="Create room" onClick={openRoomCreation}><Plus size={15} /></button>
+            <button className="iconBtn" aria-label={`Delete ${room.name}`} title="Delete active room" onClick={deleteActiveRoom}><Trash2 size={15} /></button>
           </div>
+          <small>{rooms.length} rooms · Select a room to activate it</small>
         </div>
         <nav>
           <Nav icon={<LayoutDashboard />} text="Controller" active={showControllerPage} onClick={() => setActivePage("controller")} />
@@ -914,9 +1006,9 @@ function Controller() {
               {server ? `${server.ip}:${server.port}` : "Unavailable"}
             </strong>
             <button
-              onClick={() => navigator.clipboard?.writeText(server?.url || "")}
+              onClick={() => navigator.clipboard?.writeText(viewerUrl)}
             >
-              <Copy size={13} /> Copy link
+              <Copy size={13} /> Copy viewer link
             </button>
           </div>
         </div>
@@ -950,6 +1042,7 @@ function Controller() {
         {error && <div className="errorBanner" role="alert">{error}</div>}
         {renderPage()}
       </main>
+      {roomCreateDialog}
     </div>
   );
 }

@@ -32,12 +32,7 @@ function tickTimers(){
     running.remainingMs=0;
     running.startTimestamp=null;
     db.updateTimer(running);
-    const next=timers[timers.findIndex(timer=>timer.id===running.id)+1];
-    if(room.autoAdvance&&next){
-      handleAction(room.id,{type:'start',timerId:next.id});
-    }else{
-      emitState(room.id);
-    }
+    emitState(room.id);
   }
 }
 function handleAction(roomId:string,a:any){const timers=db.listTimers(roomId); const room=db.getRoom(roomId)!; let t:Timer|undefined;
